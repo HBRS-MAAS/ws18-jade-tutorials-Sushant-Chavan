@@ -30,7 +30,7 @@ public class BookSellerAgent extends Agent {
 		System.out.println("Hello! Seller-agent "+getAID().getName()+" is ready.");
 		
 		createInventory();
-		displayInventory();
+//		displayInventory();
 		
         try {
  			Thread.sleep(3000);
@@ -75,7 +75,7 @@ public class BookSellerAgent extends Agent {
 	public void displayInventory() {
 		Set<String> titles = _paperBackInventory.keySet();
 		System.out.println("\n==========================================");
-		System.out.println("Inventory of seller agent " + getAID().getLocalName());
+		System.out.println("Inventory of seller agent: " + getAID().getLocalName());
 		System.out.println("==========================================\n");
 		System.out.println("Title | Paperback Count | Paperback cost | Ebook cost |");
 		System.out.println("--------------------------------------------");
