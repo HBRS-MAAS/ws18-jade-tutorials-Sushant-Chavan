@@ -12,10 +12,10 @@ import jade.lang.acl.ACLMessage;
 
 
 @SuppressWarnings("serial")
-public class BookBuyerAgent extends Agent {
+public class BookSellerAgent extends Agent {
 	protected void setup() {
 	// Printout a welcome message
-		System.out.println("Hello! Buyer-agent "+getAID().getName()+" is ready.");
+		System.out.println("Hello! Seller-agent "+getAID().getName()+" is ready.");
 
         try {
  			Thread.sleep(3000);
@@ -25,11 +25,11 @@ public class BookBuyerAgent extends Agent {
 		addBehaviour(new shutdown());
 
 	}
-	
+
 	protected void takeDown() {
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
-	
+
 	protected int getAgentNumber( ) {
 		String[] parts = getAID().getLocalName().split("-");
 		return Integer.parseInt(parts[1]);		
