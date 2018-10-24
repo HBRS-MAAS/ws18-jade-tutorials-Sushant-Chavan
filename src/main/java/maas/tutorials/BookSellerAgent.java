@@ -1,6 +1,7 @@
 package maas.tutorials;
 
 import java.util.Hashtable;
+import java.util.Set;
 
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
@@ -29,7 +30,8 @@ public class BookSellerAgent extends Agent {
 		System.out.println("Hello! Seller-agent "+getAID().getName()+" is ready.");
 		
 		createInventory();
-
+		displayInventory();
+		
         try {
  			Thread.sleep(3000);
  		} catch (InterruptedException e) {
@@ -68,6 +70,30 @@ public class BookSellerAgent extends Agent {
 			_ebookCatalogue.put(titles.titles.get(titleIdx), (25 * (i+1)));
 			_paperBackInventory.put(titles.titles.get(titleIdx), 5);
 		}
+	}
+	
+	public void displayInventory() {
+		Set<String> titles = _paperBackInventory.keySet();
+		System.out.println("\n==========================================");
+		System.out.println("Inventory of seller agent " + getAID().getLocalName());
+		System.out.println("==========================================\n");
+		System.out.println("Title | Paperback Count | Paperback cost | Ebook cost |");
+		System.out.println("--------------------------------------------");
+		
+		for(String t : titles) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(t);
+			sb.append(" | ");
+			sb.append(_paperBackInventory.get(t));
+			sb.append(" | ");
+			sb.append(_paperBackCatalogue.get(t));
+			sb.append(" | ");
+			sb.append(_ebookCatalogue.get(t));
+			sb.append(" | ");
+			System.out.println(sb.toString());
+		}
+		
+		System.out.println("==========================================\n");
 	}
 
     // Taken from http://www.rickyvanrijn.nl/2017/08/29/how-to-shutdown-jade-agent-platform-programmatically/
