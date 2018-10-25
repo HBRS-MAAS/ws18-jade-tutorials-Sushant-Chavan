@@ -36,21 +36,27 @@ public class BookSellerAgent extends Agent {
         
         createInventory();
 //        displayInventory();
-        
+
         registerInYellowPages();
-        
+
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
             //e.printStackTrace();
         }
-        addBehaviour(new shutdown());
+//        addBehaviour(new shutdown());
+
+        // Add the behaviour serving queries from buyer agents
+        addBehaviour(new QuotationRequestsServer());
+
+        // Add the behaviour serving purchase orders from buyer agents
+        addBehaviour(new PurchaseOrdersServer());
 
     }
-    
+
     protected void registerInYellowPages() {
         // Register the book-selling service in the yellow pages
-        
+
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
         
@@ -58,7 +64,7 @@ public class BookSellerAgent extends Agent {
         sd.setType("book-seller");
         sd.setName("Book-trading");
         dfd.addServices(sd);
-        
+
         try {
             DFService.register(this, dfd);
         }
@@ -87,23 +93,23 @@ public class BookSellerAgent extends Agent {
         String[] parts = getAID().getLocalName().split("-");
         return Integer.parseInt(parts[1]);      
     }
-    
+
     private void createInventory() {
         Book_Titles titles = Book_Titles.getInstance();
         int agentNumber = getAgentNumber();
-        
+
         _paperBackCatalogue = new Hashtable();
         _ebookCatalogue = new Hashtable();
         _paperBackInventory = new Hashtable();
-        
+
         for (int i = 0; i < 4; i++) {
             int titleIdx = i + agentNumber;
-            
+
             // Use the titles as a circular buffer
             if (titleIdx >= titles.titles.size()) {
                 titleIdx = titleIdx - titles.titles.size();
             }
-            
+
             _paperBackCatalogue.put(titles.titles.get(titleIdx), (50 * (i+1)));
             _ebookCatalogue.put(titles.titles.get(titleIdx), (25 * (i+1)));
             _paperBackInventory.put(titles.titles.get(titleIdx), 5);
@@ -117,7 +123,7 @@ public class BookSellerAgent extends Agent {
         System.out.println("==========================================\n");
         System.out.println("Title | Paperback Count | Paperback cost | Ebook cost |");
         System.out.println("--------------------------------------------");
-        
+
         for(String t : titles) {
             StringBuilder sb = new StringBuilder();
             sb.append(t);
@@ -133,7 +139,7 @@ public class BookSellerAgent extends Agent {
 
         System.out.println("==========================================\n");
     }
-    
+
     private boolean removeFromInventory(String title) {
         int count = (Integer)_paperBackInventory.get(title);
         boolean success = false;
@@ -160,10 +166,9 @@ public class BookSellerAgent extends Agent {
             catch (Exception e) {
                 //LOGGER.error(e);
             }
-
         }
     }
-    
+
     private class QuotationRequestsServer extends CyclicBehaviour {
         public void action() {
             MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
