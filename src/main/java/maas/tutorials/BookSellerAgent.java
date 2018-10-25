@@ -145,6 +145,7 @@ public class BookSellerAgent extends Agent {
         boolean success = false;
         if (count > 0) {
             _paperBackInventory.put(title, count - 1);
+            success = true;
         }
         return success;
     }
