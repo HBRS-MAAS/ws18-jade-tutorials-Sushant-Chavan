@@ -129,10 +129,19 @@ public class BookSellerAgent extends Agent {
             sb.append(_ebookCatalogue.get(t));
             sb.append(" | ");
             System.out.println(sb.toString());
-		}
-		
-		System.out.println("==========================================\n");
-	}
+        }
+
+        System.out.println("==========================================\n");
+    }
+    
+    private boolean removeFromInventory(String title) {
+        int count = (Integer)_paperBackInventory.get(title);
+        boolean success = false;
+        if (count > 0) {
+            _paperBackInventory.put(title, count - 1);
+        }
+        return success;
+    }
 
     // Taken from http://www.rickyvanrijn.nl/2017/08/29/how-to-shutdown-jade-agent-platform-programmatically/
     private class shutdown extends OneShotBehaviour{
@@ -184,6 +193,43 @@ public class BookSellerAgent extends Agent {
                 else {
                     // The requested book is NOT available for sale.
                     reply.setPerformative(ACLMessage.REFUSE);
+                    reply.setContent("not-available");
+                }
+                myAgent.send(reply);
+            }
+            else {
+                block();
+            }
+        }
+    }  // End of inner class OfferRequestsServer
+    
+    private class PurchaseOrdersServer extends CyclicBehaviour {
+        public void action() {
+            MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.ACCEPT_PROPOSAL);
+            ACLMessage msg = myAgent.receive(mt);
+            if (msg != null) {
+                // ACCEPT_PROPOSAL Message received. Process it
+                ACLMessage reply = msg.createReply();
+                Integer price = null;
+
+                String content = msg.getContent();
+                String[] contentParts = content.split(":");
+                String title = contentParts[1];
+
+                if (contentParts[0] == "Ebook") {
+                    price = (Integer) _ebookCatalogue.get(title);
+                }
+                else if (removeFromInventory(title)) {
+                    price = (Integer) _paperBackCatalogue.get(title);
+                }
+
+                if (price != null) {
+                    reply.setPerformative(ACLMessage.INFORM);
+                    System.out.println(title+" sold to agent "+msg.getSender().getName());
+                }
+                else {
+                    // The requested book has been sold to another buyer in the meanwhile .
+                    reply.setPerformative(ACLMessage.FAILURE);
                     reply.setContent("not-available");
                 }
                 myAgent.send(reply);
