@@ -12,6 +12,10 @@ import jade.domain.FIPANames;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.domain.JADEAgentManagement.ShutdownPlatform;
 import jade.lang.acl.ACLMessage;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 
 
 @SuppressWarnings("serial")
@@ -32,6 +36,8 @@ public class BookSellerAgent extends Agent {
 		createInventory();
 //		displayInventory();
 		
+		registerInYellowPages();
+		
         try {
  			Thread.sleep(3000);
  		} catch (InterruptedException e) {
@@ -40,8 +46,39 @@ public class BookSellerAgent extends Agent {
 		addBehaviour(new shutdown());
 
 	}
+	
+	protected void registerInYellowPages() {
+		// Register the book-selling service in the yellow pages
+		
+		DFAgentDescription dfd = new DFAgentDescription();
+		dfd.setName(getAID());
+		
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("book-seller");
+		sd.setName("Book-trading");
+		dfd.addServices(sd);
+		
+		try {
+			DFService.register(this, dfd);
+		}
+		catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
+	}
+	
+	protected void deregisterFromYellowPages() {
+		// Deregister from the yellow pages
+		try {
+			DFService.deregister(this);
+		}
+		catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
+	}
 
 	protected void takeDown() {
+		deregisterFromYellowPages();
+		
 		System.out.println(getAID().getLocalName() + ": Terminating.");
 	}
 
