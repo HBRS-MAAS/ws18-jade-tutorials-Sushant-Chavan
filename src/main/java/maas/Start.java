@@ -6,8 +6,8 @@ import maas.tutorials.BookBuyerAgent;
 
 public class Start {
     public static void main(String[] args) {
-    	int num_of_buyers = 1;
-    	int num_of_sellers = 1;
+    	int num_of_buyers = 20;
+    	int num_of_sellers = 3;
     	
     	List<String> agents = new Vector<>();
 
