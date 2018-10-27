@@ -136,11 +136,6 @@ public class BookBuyerAgent extends Agent {
                }
 
             public void action() {
-                if (_purchasedTitles.size() >= _titlesToPurchase.size()) {
-                    // Purchased all books. Delete te agent.
-                    myAgent.addBehaviour(new shutdown());
-                }
-
                 switch (step) {
                 case 0:
                     // Always order the second book as an Ebook
@@ -219,14 +214,19 @@ public class BookBuyerAgent extends Agent {
                             System.out.println(myAgent.getAID().getLocalName() + " Attempt failed: requested book already sold.");
                         }
 
-                        // Restart the purchase for new book.
-                        step = 0;
-                        bestSeller = null; 
-                        bestPrice = -1;
-                        repliesCnt = 0;
-                        mt = null;
-                        bookType = null;
-                        conversationID = null;
+                        if (_purchasedTitles.size() < _titlesToPurchase.size()) {
+                            // Restart the purchase for new book.
+                            step = 0;
+                            bestSeller = null; 
+                            bestPrice = -1;
+                            repliesCnt = 0;
+                            mt = null;
+                            bookType = null;
+                            conversationID = null;
+                        }
+                        else {
+                            step = 4;
+                        }
                     }
                     else {
                         block();
@@ -241,6 +241,11 @@ public class BookBuyerAgent extends Agent {
                     String targetBookTitle = bookType + _titlesToPurchase.get(_purchasedTitles.size());
                     System.out.println("Attempt failed: "+targetBookTitle+" not available for sale");
                 }
+                if (step == 4) {
+                    // Purchased all books. Delete te agent.
+                    myAgent.addBehaviour(new shutdown());
+                }
+
                 return ((step == 2 && bestSeller == null) || step == 4);
             }
         }  // End of inner class RequestPerformer
