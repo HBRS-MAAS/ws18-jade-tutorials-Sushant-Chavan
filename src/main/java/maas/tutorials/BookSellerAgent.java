@@ -30,9 +30,27 @@ public class BookSellerAgent extends Agent {
     // The inventory of paperback books for sale (maps the title of a book to number of available copies)
     private Hashtable _paperBackInventory;
     
+    public int getPrice(String content) {
+        String[] contentParts = content.split(":");
+        String title = contentParts[1];
+        boolean is_ebook = contentParts[0] == "Ebook";
+
+        int price = -1;
+        if (is_ebook) {
+            price = (Integer) _ebookCatalogue.get(title);
+        }
+        else if (_paperBackInventory.containsKey(title)){
+            int num_of_copies = (Integer) _paperBackInventory.get(title);
+            if (num_of_copies > 0) {
+                price = (Integer) _paperBackCatalogue.get(title);
+            }
+        }
+        return price;
+    }
+
     protected void setup() {
     // Printout a welcome message
-        System.out.println("Hello! Seller-agent "+getAID().getName()+" is ready.");
+        System.out.println("Hello! Seller-agent "+getAID().getLocalName()+" is ready.");
         
         createInventory();
 //        displayInventory();
@@ -177,29 +195,23 @@ public class BookSellerAgent extends Agent {
             if (msg != null) {
                 // CFP Message received. Process it
                 ACLMessage reply = msg.createReply();
-                Integer price = null;
 
                 String content = msg.getContent();
-                String[] contentParts = content.split(":");
-                String title = contentParts[1];
+                System.out.println(myAgent.getAID().getLocalName() + " Received quotation request for title " + content);
 
-                if (contentParts[0] == "Ebook") {
-                   price = (Integer) _ebookCatalogue.get(title);
-                }
-                else if ((Integer)_paperBackInventory.get(title) > 0) {
-                    // Determine price if book is in inventory
-                    price = (Integer) _paperBackCatalogue.get(title);
-                }
+                int price = ((BookSellerAgent)myAgent).getPrice(content);
 
-                if (price != null) {
+                if (price >= 0) {
                     // The requested book is available for sale. Reply with the price
                     reply.setPerformative(ACLMessage.PROPOSE);
-                    reply.setContent(price.toString());
+                    reply.setContent(Integer.toString(price));
+                    System.out.println(myAgent.getAID().getLocalName() + " Quoted Price: "+ Integer.toString(price));
                 }
                 else {
                     // The requested book is NOT available for sale.
                     reply.setPerformative(ACLMessage.REFUSE);
                     reply.setContent("not-available");
+                    System.out.println(myAgent.getAID().getLocalName() + " Refused request");
                 }
                 myAgent.send(reply);
             }
@@ -216,22 +228,16 @@ public class BookSellerAgent extends Agent {
             if (msg != null) {
                 // ACCEPT_PROPOSAL Message received. Process it
                 ACLMessage reply = msg.createReply();
-                Integer price = null;
 
                 String content = msg.getContent();
                 String[] contentParts = content.split(":");
                 String title = contentParts[1];
 
-                if (contentParts[0] == "Ebook") {
-                    price = (Integer) _ebookCatalogue.get(title);
-                }
-                else if (removeFromInventory(title)) {
-                    price = (Integer) _paperBackCatalogue.get(title);
-                }
+                int price = ((BookSellerAgent)myAgent).getPrice(content);
 
-                if (price != null) {
+                if (price >= 0) {
                     reply.setPerformative(ACLMessage.INFORM);
-                    System.out.println(title+" sold to agent "+msg.getSender().getName());
+                    System.out.println(myAgent.getAID().getLocalName() + " sold " + title + " to  "+msg.getSender().getLocalName());
                 }
                 else {
                     // The requested book has been sold to another buyer in the meanwhile .
