@@ -197,7 +197,7 @@ public class BookSellerAgent extends Agent {
                 ACLMessage reply = msg.createReply();
 
                 String content = msg.getContent();
-                System.out.println(myAgent.getAID().getLocalName() + " Received quotation request for title " + content);
+//                System.out.println(myAgent.getAID().getLocalName() + " Received quotation request for title " + content);
 
                 int price = ((BookSellerAgent)myAgent).getPrice(content);
 
@@ -205,13 +205,13 @@ public class BookSellerAgent extends Agent {
                     // The requested book is available for sale. Reply with the price
                     reply.setPerformative(ACLMessage.PROPOSE);
                     reply.setContent(Integer.toString(price));
-                    System.out.println(myAgent.getAID().getLocalName() + " Quoted Price: "+ Integer.toString(price));
+//                    System.out.println(myAgent.getAID().getLocalName() + " Quoted Price: "+ Integer.toString(price));
                 }
                 else {
                     // The requested book is NOT available for sale.
                     reply.setPerformative(ACLMessage.REFUSE);
                     reply.setContent("not-available");
-                    System.out.println(myAgent.getAID().getLocalName() + " Refused request");
+//                    System.out.println(myAgent.getAID().getLocalName() + " Refused request");
                 }
                 myAgent.send(reply);
             }

@@ -130,9 +130,9 @@ public class BookBuyerAgent extends Agent {
                        fe.printStackTrace();
                    }
 
-                   for (AID a : sellerAgents) {
-                       System.out.println("Found seller: " + a.getLocalName());
-                   }
+//                   for (AID a : sellerAgents) {
+//                       System.out.println("Found seller: " + a.getLocalName());
+//                   }
                }
 
             public void action() {
