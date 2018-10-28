@@ -265,7 +265,8 @@ public class BookBuyerAgent extends Agent {
             if (step == 2 && bestSeller == null) {
                 bookType = (_purchasedTitles.size() == 1) ? "Ebook:" : "Paperback:";
                 String targetBookTitle = bookType + _titlesToPurchase.get(_purchasedTitles.size());
-                System.out.println("Attempt failed: " + targetBookTitle + " not available for sale");
+                System.out.println(myAgent.getAID().getLocalName() + " Attempt failed: " + targetBookTitle
+                        + " not available for sale");
             }
             if (step == 4 && !_shutdownRequested) {
                 // Purchased all books. Delete te agent.

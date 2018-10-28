@@ -40,7 +40,9 @@ public class BookSellerAgent extends Agent {
         System.out.println("Hello! Seller-agent " + getAID().getLocalName() + " is ready.");
 
         createInventory();
-        // displayInventory();
+
+        System.out.println(getAID().getLocalName() + " Initial inventory:");
+        displayInventory();
 
         registerInYellowPages();
 
@@ -91,6 +93,7 @@ public class BookSellerAgent extends Agent {
         deregisterFromYellowPages();
         System.out.println(getAID().getLocalName() + ": Terminating.");
         displayTransactions();
+        displayInventory();
     }
 
     protected int getAgentNumber() {
@@ -122,33 +125,25 @@ public class BookSellerAgent extends Agent {
 
     public void displayInventory() {
         Set<String> titles = _paperBackInventory.keySet();
-        System.out.println("\n==========================================");
-        System.out.println("Inventory of seller agent: " + getAID().getLocalName());
-        System.out.println("==========================================\n");
-        System.out.println("Title | Paperback Count | Paperback cost | Ebook cost |");
-        System.out.println("--------------------------------------------");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("===============================================\n");
+        sb.append("Inventory of seller agent: " + getAID().getLocalName() + "\n");
+        sb.append("-----------------------------------------------\n");
 
         for (String t : titles) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(t);
-            sb.append(" | ");
-            sb.append(_paperBackInventory.get(t));
-            sb.append(" | ");
-            sb.append(_paperBackCatalogue.get(t));
-            sb.append(" | ");
-            sb.append(_ebookCatalogue.get(t));
-            sb.append(" | ");
-            System.out.println(sb.toString());
+            sb.append("Title: " + t + ", Paperback Count : " + _paperBackInventory.get(t) + ", Paperback cost: "
+                    + _paperBackCatalogue.get(t) + ", Ebook cost: " + _ebookCatalogue.get(t) + "\n");
         }
-
-        System.out.println("==========================================\n");
+        sb.append("===============================================\n");
+        System.out.println(sb.toString());
     }
 
     private boolean removeFromInventory(String title) {
         int count = (Integer) _paperBackInventory.get(title);
         boolean success = false;
         if (count > 0) {
-            _paperBackInventory.put(title, count - 1);
+            _paperBackInventory.replace(title, count - 1);
             success = true;
         }
         return success;
@@ -173,6 +168,9 @@ public class BookSellerAgent extends Agent {
 
     public void addTransaction(String type, String title, int price, String buyer) {
         _transactions.add(new Transaction(type, title, price, buyer));
+        if (type.contains("Ebook")) {
+            removeFromInventory(title);
+        }
     }
 
     public void displayTransactions() {
@@ -198,7 +196,7 @@ public class BookSellerAgent extends Agent {
             } catch (InterruptedException e) {
                 // e.printStackTrace();
             }
-            
+
             ACLMessage shutdownMessage = new ACLMessage(ACLMessage.REQUEST);
             Codec codec = new SLCodec();
             myAgent.getContentManager().registerLanguage(codec);
