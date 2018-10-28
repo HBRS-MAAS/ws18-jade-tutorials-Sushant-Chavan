@@ -92,7 +92,7 @@ public class BookBuyerAgent extends Agent {
     public void displayTransactions() {
         StringBuilder sb = new StringBuilder();
         sb.append("===============================================\n");
-        sb.append("Transactions executed by seller agent: " + getAID().getLocalName() + "\n");
+        sb.append("Transactions executed by buyer agent: " + getAID().getLocalName() + "\n");
         sb.append("-----------------------------------------------\n");
 
         for (Transaction t : _transactions) {
