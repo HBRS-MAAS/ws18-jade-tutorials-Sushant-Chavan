@@ -2,6 +2,8 @@ package maas.tutorials;
 
 import java.util.Hashtable;
 import java.util.Set;
+import java.util.List;
+import java.util.Vector;
 
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
@@ -30,32 +32,18 @@ public class BookSellerAgent extends Agent {
     // The inventory of paperback books for sale (maps the title of a book to number of available copies)
     private Hashtable _paperBackInventory;
     
-    public int getPrice(String content) {
-        String[] contentParts = content.split(":");
-        String title = contentParts[1];
-        boolean is_ebook = contentParts[0] == "Ebook";
-
-        int price = -1;
-        if (is_ebook) {
-            price = (Integer) _ebookCatalogue.get(title);
-        }
-        else if (_paperBackInventory.containsKey(title)){
-            int num_of_copies = (Integer) _paperBackInventory.get(title);
-            if (num_of_copies > 0) {
-                price = (Integer) _paperBackCatalogue.get(title);
-            }
-        }
-        return price;
-    }
+    private List<Transaction> _transactions;
 
     protected void setup() {
     // Printout a welcome message
         System.out.println("Hello! Seller-agent "+getAID().getLocalName()+" is ready.");
-        
+
         createInventory();
 //        displayInventory();
 
         registerInYellowPages();
+
+        _transactions = new Vector<>();
 
         try {
             Thread.sleep(3000);
@@ -103,8 +91,8 @@ public class BookSellerAgent extends Agent {
 
     protected void takeDown() {
         deregisterFromYellowPages();
-        
         System.out.println(getAID().getLocalName() + ": Terminating.");
+        displayTransactions();
     }
 
     protected int getAgentNumber( ) {
@@ -168,9 +156,49 @@ public class BookSellerAgent extends Agent {
         return success;
     }
 
+    public int getPrice(String content) {
+        String[] contentParts = content.split(":");
+        String title = contentParts[1];
+        boolean is_ebook = contentParts[0] == "Ebook";
+
+        int price = -1;
+        if (is_ebook) {
+            price = (Integer) _ebookCatalogue.get(title);
+        }
+        else if (_paperBackInventory.containsKey(title)){
+            int num_of_copies = (Integer) _paperBackInventory.get(title);
+            if (num_of_copies > 0) {
+                price = (Integer) _paperBackCatalogue.get(title);
+            }
+        }
+        return price;
+    }
+    
+    public void addTransaction(String type, String title, int price, String buyer) {
+        _transactions.add(new Transaction(type, title, price, buyer));
+    }
+    
+    public void displayTransactions() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("===============================================\n");
+        sb.append("Transactions executed by seller agent: " + getAID().getLocalName() + "\n");
+        sb.append("-----------------------------------------------\n");
+
+        for (Transaction t : _transactions) {
+            sb.append(t.getAsString() + "\n");
+        }
+        sb.append("===============================================\n");
+        System.out.println(sb.toString());
+    }
+
     // Taken from http://www.rickyvanrijn.nl/2017/08/29/how-to-shutdown-jade-agent-platform-programmatically/
     private class shutdown extends OneShotBehaviour{
         public void action() {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                //e.printStackTrace();
+            }
             ACLMessage shutdownMessage = new ACLMessage(ACLMessage.REQUEST);
             Codec codec = new SLCodec();
             myAgent.getContentManager().registerLanguage(codec);
@@ -237,7 +265,8 @@ public class BookSellerAgent extends Agent {
 
                 if (price >= 0) {
                     reply.setPerformative(ACLMessage.INFORM);
-                    System.out.println(myAgent.getAID().getLocalName() + " sold " + title + " to  "+msg.getSender().getLocalName());
+                    ((BookSellerAgent)myAgent).addTransaction(contentParts[0], title, price, msg.getSender().getLocalName());
+//                    System.out.println(myAgent.getAID().getLocalName() + " sold " + title + " to  "+msg.getSender().getLocalName());
                 }
                 else {
                     // The requested book has been sold to another buyer in the meanwhile .
@@ -251,5 +280,4 @@ public class BookSellerAgent extends Agent {
             }
         }
     }  // End of inner class OfferRequestsServer
-
 }

@@ -25,13 +25,15 @@ import jade.lang.acl.MessageTemplate;
 public class BookBuyerAgent extends Agent {
     protected List<String> _titlesToPurchase;
     protected List<String> _purchasedTitles;
+    protected List<Transaction> _transactions;
 
     protected void setup() {
     // Printout a welcome message
         System.out.println("Hello! Buyer-agent "+getAID().getLocalName()+" is ready.");
-        
+
         _purchasedTitles = new Vector<>();
-        
+        _transactions = new Vector<>();
+
         determineTitlesToBuy();
 //        displayTitlesToBuy();
 
@@ -46,11 +48,12 @@ public class BookBuyerAgent extends Agent {
     
     protected void takeDown() {
         System.out.println(getAID().getLocalName() + ": Terminating.");
+        displayTransactions();
     }
     
     protected int getAgentNumber( ) {
         String[] parts = getAID().getLocalName().split("-");
-        return Integer.parseInt(parts[1]);      
+        return Integer.parseInt(parts[1]);
     }
     
     protected void determineTitlesToBuy() {
@@ -64,7 +67,7 @@ public class BookBuyerAgent extends Agent {
         _titlesToPurchase.add(titles.titles.get((agentNum + 2) % titles.titles.size()));
     }
     
-    protected void displayTitlesToBuy() {       
+    protected void displayTitlesToBuy() {
         System.out.println("\n==========================================");
         System.out.println("Items to buy by buyer agent: " + getAID().getLocalName());
         System.out.println("==========================================\n");
@@ -82,9 +85,31 @@ public class BookBuyerAgent extends Agent {
         }
     }
 
+    public void addTransaction(String type, String title, int price, String buyer) {
+        _transactions.add(new Transaction(type, title, price, buyer));
+    }
+    
+    public void displayTransactions() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("===============================================\n");
+        sb.append("Transactions executed by seller agent: " + getAID().getLocalName() + "\n");
+        sb.append("-----------------------------------------------\n");
+
+        for (Transaction t : _transactions) {
+            sb.append(t.getAsString() + "\n");
+        }
+        sb.append("===============================================\n");
+        System.out.println(sb.toString());
+    }
+
     // Taken from http://www.rickyvanrijn.nl/2017/08/29/how-to-shutdown-jade-agent-platform-programmatically/
     private class shutdown extends OneShotBehaviour{
         public void action() {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                //e.printStackTrace();
+            }
             ACLMessage shutdownMessage = new ACLMessage(ACLMessage.REQUEST);
             Codec codec = new SLCodec();
             myAgent.getContentManager().registerLanguage(codec);
@@ -206,8 +231,9 @@ public class BookBuyerAgent extends Agent {
                     if (reply != null) {
                         // Purchase order reply received
                         if (reply.getPerformative() == ACLMessage.INFORM) {
-                            // Purchase successful. We can terminate
-                            System.out.println(myAgent.getAID().getLocalName() + " purchased " + _titlesToPurchase.get(_purchasedTitles.size()) +" for "+ bestPrice + " from "+reply.getSender().getLocalName() );
+                            // Purchase successful.
+                            ((BookBuyerAgent)myAgent).addTransaction(bookType, targetBookTitle.split(":")[1], bestPrice, reply.getSender().getLocalName());
+//                            System.out.println(myAgent.getAID().getLocalName() + " purchased " + _titlesToPurchase.get(_purchasedTitles.size()) +" for "+ bestPrice + " from "+reply.getSender().getLocalName() );
                             _purchasedTitles.add(_titlesToPurchase.get(_purchasedTitles.size()));
                         }
                         else {
