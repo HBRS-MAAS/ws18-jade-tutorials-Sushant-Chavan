@@ -25,6 +25,7 @@ public class BookBuyerAgent extends Agent {
     protected List<String> _titlesToPurchase;
     protected List<String> _purchasedTitles;
     protected List<Transaction> _transactions;
+    static boolean _shutdownRequested = false;
 
     protected void setup() {
         // Printout a welcome message
@@ -266,9 +267,10 @@ public class BookBuyerAgent extends Agent {
                 String targetBookTitle = bookType + _titlesToPurchase.get(_purchasedTitles.size());
                 System.out.println("Attempt failed: " + targetBookTitle + " not available for sale");
             }
-            if (step == 4) {
+            if (step == 4 && !_shutdownRequested) {
                 // Purchased all books. Delete te agent.
                 myAgent.addBehaviour(new shutdown());
+                _shutdownRequested = true;
             }
 
             return ((step == 2 && bestSeller == null) || step == 4);
