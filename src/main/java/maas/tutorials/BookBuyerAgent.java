@@ -61,9 +61,9 @@ public class BookBuyerAgent extends Agent {
 
         Book_Titles titles = Book_Titles.getInstance();
 
-        _titlesToPurchase.add(titles.titles.get(agentNum % titles.titles.size()));
-        _titlesToPurchase.add(titles.titles.get((agentNum + 1) % titles.titles.size()));
-        _titlesToPurchase.add(titles.titles.get((agentNum + 2) % titles.titles.size()));
+        _titlesToPurchase.add(titles._titles.get(agentNum % titles._titles.size()));
+        _titlesToPurchase.add(titles._titles.get((agentNum + 1) % titles._titles.size()));
+        _titlesToPurchase.add(titles._titles.get((agentNum + 2) % titles._titles.size()));
     }
 
     protected void displayTitlesToBuy() {

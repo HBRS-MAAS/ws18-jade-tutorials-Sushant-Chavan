@@ -51,7 +51,6 @@ public class BookSellerAgent extends Agent {
         } catch (InterruptedException e) {
             // e.printStackTrace();
         }
-        // addBehaviour(new shutdown());
 
         // Add the behaviour serving queries from buyer agents
         addBehaviour(new QuotationRequestsServer());
@@ -111,13 +110,13 @@ public class BookSellerAgent extends Agent {
             int titleIdx = i + agentNumber;
 
             // Use the titles as a circular buffer
-            if (titleIdx >= titles.titles.size()) {
-                titleIdx = titleIdx - titles.titles.size();
+            if (titleIdx >= titles._titles.size()) {
+                titleIdx = titleIdx - titles._titles.size();
             }
 
-            _paperBackCatalogue.put(titles.titles.get(titleIdx), (50 * (i + 1)));
-            _ebookCatalogue.put(titles.titles.get(titleIdx), (25 * (i + 1)));
-            _paperBackInventory.put(titles.titles.get(titleIdx), 5);
+            _paperBackCatalogue.put(titles._titles.get(titleIdx), (50 * (i + 1)));
+            _ebookCatalogue.put(titles._titles.get(titleIdx), (25 * (i + 1)));
+            _paperBackInventory.put(titles._titles.get(titleIdx), 5);
         }
     }
 
@@ -193,11 +192,13 @@ public class BookSellerAgent extends Agent {
     // http://www.rickyvanrijn.nl/2017/08/29/how-to-shutdown-jade-agent-platform-programmatically/
     private class shutdown extends OneShotBehaviour {
         public void action() {
+            // Wait 3 seconds for other agents to complete their transactions
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
                 // e.printStackTrace();
             }
+            
             ACLMessage shutdownMessage = new ACLMessage(ACLMessage.REQUEST);
             Codec codec = new SLCodec();
             myAgent.getContentManager().registerLanguage(codec);
